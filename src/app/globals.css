@@ -1,0 +1,90 @@
+@import "tailwindcss";
+
+@layer base {
+  :root {
+    /* Hardcoded ChatGPT Pure Black Theme (Light & Dark Unified) */
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #0d0d0d;
+    --card-foreground: #ffffff;
+    --popover: #0d0d0d;
+    --popover-foreground: #ffffff;
+    --primary: #ffffff;
+    --primary-foreground: #000000;
+    --secondary: #a3a3a3;
+    --secondary-foreground: #ffffff;
+    --muted: #171717;
+    --muted-foreground: #a3a3a3;
+    --accent: #1f1f1f;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #1f1f1f;
+    --input: #1f1f1f;
+    --ring: #ffffff;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    /* Hardcoded ChatGPT Pure Black Theme (Unified) */
+    --background: #000000;
+    --foreground: #ffffff;
+    --card: #0d0d0d;
+    --card-foreground: #ffffff;
+    --popover: #0d0d0d;
+    --popover-foreground: #ffffff;
+    --primary: #ffffff;
+    --primary-foreground: #000000;
+    --secondary: #a3a3a3;
+    --secondary-foreground: #ffffff;
+    --muted: #171717;
+    --muted-foreground: #a3a3a3;
+    --accent: #1f1f1f;
+    --accent-foreground: #ffffff;
+    --destructive: #ef4444;
+    --destructive-foreground: #ffffff;
+    --border: #1f1f1f;
+    --input: #1f1f1f;
+    --ring: #ffffff;
+  }
+}
+
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+}
+
+/* Glassmorphism utility updated for black style */
+.glass {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+.dark .glass {
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.03);
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--secondary);
+}

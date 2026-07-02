@@ -317,29 +317,6 @@ Main Tables
 - resume_reviews
 
 ---
-
-# 🌐 Environment Variables
-
-Create a `.env.local`
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=
-
-NEXT_PUBLIC_SUPABASE_ANON_KEY=
-
-SUPABASE_SERVICE_ROLE_KEY=
-
-GEMINI_API_KEY=
-
-CLOUDINARY_CLOUD_NAME=
-
-CLOUDINARY_API_KEY=
-
-CLOUDINARY_API_SECRET=
-```
-
----
-
 # ⚙️ Installation
 
 Clone the repository
@@ -426,8 +403,6 @@ Full Stack Developer • AI Enthusiast • SaaS Builder
 
 GitHub: https://github.com/Abhas-dot-dev
 
-LinkedIn: _(Add your LinkedIn profile here)_
-
 ---
 
 # ⭐ Support
@@ -441,13 +416,3 @@ If you found this project useful,
 📢 Share it
 
 ---
-
-## 📄 License
-
-This project is licensed under the MIT License.
-
----
-
-## 💡 Inspiration
-
-Built to demonstrate how modern AI can transform the recruitment process by helping recruiters identify top talent faster while giving candidates actionable, AI-driven feedback to improve their resumes.

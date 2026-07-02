@@ -10,33 +10,37 @@ export async function POST(req: Request) {
     }
 
     if (isSupabaseConfigured && supabaseAdmin) {
-      try {
-        // Authenticate with Supabase first
-        const { data, error } = await supabaseAdmin.auth.signInWithPassword({
-          email,
-          password,
-        });
+      // Authenticate with Supabase first
+      const { data, error } = await supabaseAdmin.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-        if (!error && data?.user) {
-          // Fetch user profile role from users table
-          const { data: profile } = await supabaseAdmin
-            .from('users')
-            .select('*')
-            .eq('id', data.user.id)
-            .maybeSingle();
+      if (error) {
+        return NextResponse.json({ error: error.message }, { status: 400 });
+      }
 
-          return NextResponse.json({
-            success: true,
-            user: { 
-              id: data.user.id, 
-              name: profile?.full_name || data.user.user_metadata?.full_name || email.split('@')[0], 
-              email, 
-              role: profile?.role || data.user.user_metadata?.role || 'candidate' 
-            },
-          });
+      if (data?.user) {
+        // Fetch user profile role from users table
+        const { data: profile, error: dbError } = await supabaseAdmin
+          .from('users')
+          .select('*')
+          .eq('id', data.user.id)
+          .maybeSingle();
+
+        if (dbError) {
+          return NextResponse.json({ error: dbError.message }, { status: 500 });
         }
-      } catch (err) {
-        console.warn('Supabase sign-in attempt warning:', err);
+
+        return NextResponse.json({
+          success: true,
+          user: { 
+            id: data.user.id, 
+            name: profile?.full_name || data.user.user_metadata?.full_name || email.split('@')[0], 
+            email, 
+            role: profile?.role || data.user.user_metadata?.role || 'candidate' 
+          },
+        });
       }
     }
 

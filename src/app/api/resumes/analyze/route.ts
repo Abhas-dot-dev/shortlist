@@ -2,13 +2,15 @@ import { NextResponse } from 'next/server';
 import { parseResume } from '@/lib/parser';
 import { storageProvider } from '@/lib/storage';
 import { aiProvider } from '@/lib/ai';
-import { getJobById, createApplicationFromAnalysis } from '@/lib/dataService';
+import { getJobById, createApplicationFromAnalysis, saveResumeAndReview } from '@/lib/dataService';
+import { verifyTableExists, isSupabaseConfigured } from '@/lib/supabase';
 
 export async function POST(req: Request) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
     const jobId = formData.get('jobId') as string | null;
+    const candidateId = formData.get('candidateId') as string | null;
 
     if (!file) {
       return NextResponse.json({ error: 'No file uploaded' }, { status: 400 });
@@ -23,23 +25,11 @@ export async function POST(req: Request) {
 
     // Step 2: Extract text from PDF or DOCX using local parsers
     console.log('Extracting text from resume...');
-    let extractedText = '';
-    try {
-      extractedText = await parseResume(fileBuffer, fileMime);
-    } catch (parseError: any) {
-      console.error('File parsing error, falling back to basic extraction:', parseError);
-      extractedText = `Resume name: ${fileName}. Extracted via fallback parser.`;
-    }
+    const extractedText = await parseResume(fileBuffer, fileMime);
 
     // Step 3: Upload using abstracted storage provider (resolves to Local or Cloudinary)
     console.log('Uploading file...');
-    let resumeUrl = '';
-    try {
-      resumeUrl = await storageProvider.uploadResume(fileBuffer, fileName, fileMime);
-    } catch (uploadError: any) {
-      console.error('Upload error:', uploadError);
-      resumeUrl = `/uploads/demo_fallback_${fileName}`;
-    }
+    const resumeUrl = await storageProvider.uploadResume(fileBuffer, fileName, fileMime);
 
     // Step 4: Run AI semantic extraction
     console.log('Analyzing resume with Gemini AI...');
@@ -49,32 +39,66 @@ export async function POST(req: Request) {
     let matchResult = null;
     if (jobId) {
       const jobDetails = await getJobById(jobId);
-      if (jobDetails) {
-        console.log('Comparing candidate with job openings...');
-        matchResult = await aiProvider.matchResume(analysis, {
-          title: jobDetails.title,
-          description: jobDetails.description,
-          requiredSkills: jobDetails.requiredSkills,
-          preferredSkills: jobDetails.preferredSkills,
-          experienceRequired: jobDetails.experience,
-          educationRequired: jobDetails.education,
-        });
+      if (!jobDetails) {
+        throw new Error(`Job opening with ID ${jobId} was not found.`);
       }
+      console.log('Comparing candidate with job openings...');
+      matchResult = await aiProvider.matchResume(analysis, {
+        title: jobDetails.title,
+        description: jobDetails.description,
+        requiredSkills: jobDetails.requiredSkills,
+        preferredSkills: jobDetails.preferredSkills,
+        experienceRequired: jobDetails.experience,
+        educationRequired: jobDetails.education,
+      });
     }
 
     // Merge analysis & match result
     const finalReport = {
       ...analysis,
       ...(matchResult || {
-        overallMatchScore: 75,
-        strengths: ['Relevant industry background'],
-        weaknesses: ['None documented'],
+        overallMatchScore: 0,
+        skillMatchScore: 0,
+        experienceMatchScore: 0,
+        educationMatchScore: 0,
         missingSkills: [],
-        summary: analysis.summary || 'Profile registered successfully.',
+        strengths: [],
+        weaknesses: [],
+        recruiterRecommendation: 'No job matching requested.',
+        interviewRecommendation: '',
+        confidenceScore: 100,
       }),
     };
 
     // Step 6: Save to database or mock memory
+    let reviewResult = null;
+    let savedResumeId = null;
+
+    if (candidateId) {
+      if (isSupabaseConfigured) {
+        const { exists } = await verifyTableExists('resume_reviews');
+        if (!exists) {
+          return NextResponse.json({
+            error: "Database schema is incomplete.",
+            missing_table: "resume_reviews",
+            solution: "Run supabase_reviews_migration.sql inside the Supabase SQL Editor."
+          }, { status: 500 });
+        }
+      }
+
+      console.log('Saving resume and generating AI Resume Review...');
+      const savedData = await saveResumeAndReview(
+        candidateId,
+        resumeUrl,
+        extractedText || fileName,
+        analysis
+      );
+      if (savedData) {
+        reviewResult = savedData.review;
+        savedResumeId = savedData.resume.id;
+      }
+    }
+
     if (jobId) {
       const newApp = await createApplicationFromAnalysis(
         jobId, 
@@ -88,12 +112,16 @@ export async function POST(req: Request) {
         ...finalReport,
         applicationId: newApp._id,
         resumeUrl,
+        review: reviewResult,
+        resumeId: savedResumeId,
       });
     }
 
     return NextResponse.json({
       ...finalReport,
       resumeUrl,
+      review: reviewResult,
+      resumeId: savedResumeId,
     });
   } catch (error: any) {
     console.error('API Error in analyze route:', error);

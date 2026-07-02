@@ -9,6 +9,7 @@ interface FileUploaderProps {
   onUploadSuccess?: (data: any) => void;
   onUploadError?: (error: string) => void;
   jobId?: string; // If uploading for a specific job
+  candidateId?: string; // Candidate profile id
 }
 
 type PipelineStep = 
@@ -25,7 +26,8 @@ export function FileUploader({
   onUploadStart,
   onUploadSuccess,
   onUploadError,
-  jobId
+  jobId,
+  candidateId
 }: FileUploaderProps) {
   const [dragActive, setDragActive] = useState(false);
   const [file, setFile] = useState<File | null>(null);
@@ -111,6 +113,7 @@ export function FileUploader({
       const formData = new FormData();
       formData.append('file', file);
       if (jobId) formData.append('jobId', jobId);
+      if (candidateId) formData.append('candidateId', candidateId);
 
       // We'll call our API here. It handles both parsing & AI analyzing.
       // Let's call the resume analysis API route

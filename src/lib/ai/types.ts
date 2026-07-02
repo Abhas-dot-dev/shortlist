@@ -1,4 +1,4 @@
-import { CandidateExtraction, MatchResult } from '@/lib/aiService';
+import { CandidateExtraction, MatchResult, ResumeReview } from '@/lib/aiService';
 
 export interface AIProvider {
   analyzeResume(extractedText: string): Promise<CandidateExtraction>;
@@ -10,4 +10,5 @@ export interface AIProvider {
     experienceRequired: string;
     educationRequired: string;
   }): Promise<MatchResult>;
+  generateResumeReview(resumeText: string): Promise<ResumeReview>;
 }

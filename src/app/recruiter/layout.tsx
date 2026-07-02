@@ -59,12 +59,12 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
       const res = await fetch('/api/debug/seed', { method: 'POST' });
       const data = await res.json();
       if (data.success) {
-        toast('Database Seeded', 'Mock data populated successfully inside MongoDB.', 'success');
+        toast('Database Seeded', 'Mock data populated successfully inside Supabase.', 'success');
         setDbSeeded(true);
         // Refresh page content
         window.location.reload();
       } else {
-        toast('Seeding Info', 'MongoDB URI is not set. Running app in in-memory session mode.', 'info');
+        toast('Seeding Info', 'Supabase credentials are not set. Running app in in-memory session mode.', 'info');
       }
     } catch (e) {
       toast('Seeding Failed', 'Failed to communicate with seeding api.', 'error');
@@ -114,14 +114,14 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
 
         {/* Sidebar Footer */}
         <div className="p-4 border-t border-slate-100 dark:border-slate-800/60 space-y-2">
-          {/* MongoDB seed triggers */}
+          {/* Supabase seed triggers */}
           <button
             onClick={handleSeedDb}
             disabled={seedingLoading}
             className="flex w-full items-center justify-center gap-2 text-xs font-semibold py-2 px-3 border border-slate-200 dark:border-slate-800 rounded-lg bg-slate-50 dark:bg-slate-900/60 hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
           >
             <Database className="h-4.5 w-4.5" />
-            {seedingLoading ? 'Seeding...' : 'Seed MongoDB Atlas'}
+            {seedingLoading ? 'Seeding...' : 'Seed Supabase'}
           </button>
           
           <button 
@@ -193,7 +193,7 @@ export default function RecruiterLayout({ children }: { children: React.ReactNod
               onClick={handleSeedDb}
               className="flex w-full items-center gap-3 px-3 py-2 rounded-lg text-sm font-medium text-slate-600 dark:text-slate-300"
             >
-              <Database className="h-5 w-5" /> Seed MongoDB
+              <Database className="h-5 w-5" /> Seed Supabase
             </button>
             <button 
               onClick={() => { setMobileMenuOpen(false); handleLogout(); }}

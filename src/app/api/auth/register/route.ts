@@ -26,18 +26,18 @@ export async function POST(req: Request) {
       }
 
       // Supabase handle_new_user trigger automatically copies auth user details to public.users table.
-      // In case trigger didn't execute or database is syncing, let's do a backup insert
-      try {
-        await supabaseAdmin
-          .from('users')
-          .insert({
-            id: data.user.id,
-            full_name: name,
-            email: email,
-            role: role || 'candidate',
-          });
-      } catch (err) {
-        console.warn('Silent insert profile sync warning:', err);
+      // In case trigger didn't execute or database is syncing, let's do a backup insert and throw if it fails.
+      const { error: dbError } = await supabaseAdmin
+        .from('users')
+        .insert({
+          id: data.user.id,
+          full_name: name,
+          email: email,
+          role: role || 'candidate',
+        });
+      
+      if (dbError && dbError.code !== '23505') { // 23505 is unique violation (already inserted by trigger)
+        throw dbError;
       }
 
       return NextResponse.json({

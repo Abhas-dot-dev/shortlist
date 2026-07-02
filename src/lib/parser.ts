@@ -1,4 +1,5 @@
 import mammoth from 'mammoth';
+import { getDocumentProxy, extractText } from 'unpdf';
 
 // Clean unnecessary whitespace and remove duplicate lines
 function cleanText(text: string): string {
@@ -21,23 +22,11 @@ function cleanText(text: string): string {
 
 async function parsePdf(fileBuffer: Buffer): Promise<string> {
   try {
-    if (typeof global !== 'undefined' && !(global as any).DOMMatrix) {
-      (global as any).DOMMatrix = class DOMMatrix {};
-    }
-    // eslint-disable-next-line @typescript-eslint/no-require-imports
-    const pdf = require('pdf-parse');
-    
-    if (pdf && pdf.PDFParse) {
-      const parser = new pdf.PDFParse({ data: fileBuffer });
-      const data = await parser.getText();
-      return cleanText(data.text || '');
-    } else {
-      const parseFn = typeof pdf === 'function' ? pdf : (pdf.default || pdf);
-      const data = await parseFn(fileBuffer);
-      return cleanText(data.text || '');
-    }
+    const pdf = await getDocumentProxy(new Uint8Array(fileBuffer));
+    const { text } = await extractText(pdf, { mergePages: true });
+    return cleanText(text || '');
   } catch (error: any) {
-    console.error('pdf-parse error:', error);
+    console.error('unpdf parsing error:', error);
     throw new Error('Failed to parse PDF document: ' + error.message);
   }
 }
@@ -69,3 +58,4 @@ export async function parseResume(fileBuffer: Buffer, mimeType: string): Promise
 
   throw new Error('Unsupported mime type: ' + mimeType + '. Only PDF and DOCX files are supported.');
 }
+

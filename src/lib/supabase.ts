@@ -31,3 +31,23 @@ if (!isSupabaseConfigured) {
     'Supabase environment variables are missing. Database will run in Mock/Demo Mode.'
   );
 }
+
+export async function verifyTableExists(tableName: string): Promise<{ exists: boolean; error?: string }> {
+  if (!supabaseAdmin) return { exists: false, error: 'Supabase admin client not initialized.' };
+  try {
+    const { error } = await supabaseAdmin.from(tableName).select('id').limit(0);
+    if (error) {
+      if (
+        error.code === 'PGRST205' || 
+        error.message.includes('Could not find the table') || 
+        error.message.includes('does not exist')
+      ) {
+        return { exists: false, error: error.message };
+      }
+    }
+    return { exists: true };
+  } catch (err: any) {
+    return { exists: false, error: err.message };
+  }
+}
+

@@ -317,6 +317,7 @@ Main Tables
 - resume_reviews
 
 ---
+
 # ⚙️ Installation
 
 Clone the repository
@@ -396,12 +397,14 @@ Fork the repository and submit a Pull Request.
 # 👨‍💻 Author
 
 **Abhas Srivastava**
-
-B.Tech Electronics & Communication Engineering
-
-Full Stack Developer • AI Enthusiast • SaaS Builder
-
 GitHub: https://github.com/Abhas-dot-dev
+
+**Anjali Jaiswal**
+https://github.com/Anjalijais7
+**Shaurya Mani Tripathi**
+https://github.com/yoyok-yahb
+**Kishan Singh**
+https://github.com/kishansingh7x
 
 ---
 

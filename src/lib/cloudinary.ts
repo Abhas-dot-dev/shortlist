@@ -1,28 +1,40 @@
 import { v2 as cloudinary } from 'cloudinary';
 
-const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
-const apiKey = process.env.CLOUDINARY_API_KEY || '';
-const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
-
-export const isCloudinaryConfigured = Boolean(cloudName && apiKey && apiSecret);
-
-if (isCloudinaryConfigured) {
-  cloudinary.config({
-    cloud_name: cloudName,
-    api_key: apiKey,
-    api_secret: apiSecret,
-  });
-} else {
-  console.warn(
-    'Cloudinary credentials are missing. File uploads will return demo URLs.'
+let isConfigured = false;
+export function isCloudinaryConfigured() {
+  return Boolean(
+    process.env.CLOUDINARY_CLOUD_NAME &&
+    process.env.CLOUDINARY_API_KEY &&
+    process.env.CLOUDINARY_API_SECRET
   );
+}
+
+function ensureConfigured() {
+  if (isConfigured) return;
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
+  const apiKey = process.env.CLOUDINARY_API_KEY || '';
+  const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
+
+  if (cloudName && apiKey && apiSecret) {
+    cloudinary.config({
+      cloud_name: cloudName,
+      api_key: apiKey,
+      api_secret: apiSecret,
+    });
+    isConfigured = true;
+  } else {
+    console.warn(
+      'Cloudinary credentials are missing. File uploads will return demo URLs.'
+    );
+  }
 }
 
 /**
  * Uploads a file buffer directly to Cloudinary
  */
 export async function uploadToCloudinary(fileBuffer: Buffer, fileName: string): Promise<string> {
-  if (!isCloudinaryConfigured) {
+  ensureConfigured();
+  if (!isCloudinaryConfigured()) {
     console.log('Cloudinary not configured. Returning local demo URL...');
     return `/uploads/demo_${Date.now()}_${fileName}`;
   }
@@ -52,7 +64,8 @@ export async function uploadToCloudinary(fileBuffer: Buffer, fileName: string): 
  * Deletes a file from Cloudinary given its secure URL
  */
 export async function deleteFromCloudinary(fileUrl: string): Promise<boolean> {
-  if (!isCloudinaryConfigured || !fileUrl.includes('res.cloudinary.com')) {
+  ensureConfigured();
+  if (!isCloudinaryConfigured() || !fileUrl.includes('res.cloudinary.com')) {
     return true;
   }
 

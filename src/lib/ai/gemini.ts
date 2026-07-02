@@ -12,8 +12,14 @@ import {
 const geminiKey = process.env.GEMINI_API_KEY || '';
 const isGeminiConfigured = Boolean(geminiKey);
 
-// Initialize the new GoogleGenAI client if key exists
-const aiClient = isGeminiConfigured ? new GoogleGenAI({ apiKey: geminiKey }) : null;
+// Lazily initialize the GoogleGenAI client
+let aiClient: GoogleGenAI | null = null;
+function getAiClient(): GoogleGenAI | null {
+  if (!aiClient && isGeminiConfigured) {
+    aiClient = new GoogleGenAI({ apiKey: geminiKey });
+  }
+  return aiClient;
+}
 
 function cleanJsonString(str: string): string {
   let cleaned = str.trim();
@@ -28,7 +34,8 @@ export class GeminiProvider implements AIProvider {
   private modelName = 'gemini-2.5-flash';
 
   async analyzeResume(extractedText: string): Promise<CandidateExtraction> {
-    if (!isGeminiConfigured || !aiClient) {
+    const client = getAiClient();
+    if (!isGeminiConfigured || !client) {
       throw new Error('[GeminiProvider] Gemini API key is missing or not configured.');
     }
 
@@ -37,7 +44,7 @@ export class GeminiProvider implements AIProvider {
     while (attempts < 2) {
       try {
         console.log(`[GeminiProvider] Extracting candidate details (Attempt ${attempts + 1})...`);
-        const response = await aiClient.models.generateContent({
+        const response = await client.models.generateContent({
           model: this.modelName,
           contents: `
             You are an expert ATS resume parsing engine. Analyze the following extracted text from a candidate's resume and extract the details in structured JSON format.
@@ -97,7 +104,8 @@ export class GeminiProvider implements AIProvider {
       educationRequired: string;
     }
   ): Promise<MatchResult> {
-    if (!isGeminiConfigured || !aiClient) {
+    const client = getAiClient();
+    if (!isGeminiConfigured || !client) {
       throw new Error('[GeminiProvider] Gemini API key is missing or not configured.');
     }
 
@@ -106,7 +114,7 @@ export class GeminiProvider implements AIProvider {
     while (attempts < 2) {
       try {
         console.log(`[GeminiProvider] Matching resume against job (Attempt ${attempts + 1})...`);
-        const response = await aiClient.models.generateContent({
+        const response = await client.models.generateContent({
           model: this.modelName,
           contents: `
             You are an expert recruiter and talent sourcing analyst. Compare the candidate's parsed resume details with the target job opening parameters and calculate match scores.
@@ -161,7 +169,8 @@ export class GeminiProvider implements AIProvider {
   }
 
   async generateResumeReview(resumeText: string): Promise<ResumeReview> {
-    if (!isGeminiConfigured || !aiClient) {
+    const client = getAiClient();
+    if (!isGeminiConfigured || !client) {
       throw new Error('[GeminiProvider] Gemini API key is missing or not configured.');
     }
 
@@ -170,7 +179,7 @@ export class GeminiProvider implements AIProvider {
     while (attempts < 2) {
       try {
         console.log(`[GeminiProvider] Generating resume review (Attempt ${attempts + 1})...`);
-        const response = await aiClient.models.generateContent({
+        const response = await client.models.generateContent({
           model: this.modelName,
           contents: `
             You are an expert resume reviewer and executive career coach. Review the candidate's resume text and calculate quality scores (0 to 100), detailed feedback metrics, recruiter insights, and career path recommendations.

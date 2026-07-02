@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { supabaseAdmin, isSupabaseConfigured, verifyTableExists } from '@/lib/supabase';
 import { GeminiProvider } from '@/lib/ai/gemini';
 
+export const runtime = 'nodejs';
+
 export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);

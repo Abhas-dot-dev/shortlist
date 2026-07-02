@@ -2,7 +2,10 @@ import { v2 as cloudinary } from 'cloudinary';
 import { ResumeStorageProvider } from './types';
 
 export class CloudinaryProvider implements ResumeStorageProvider {
-  constructor() {
+  private isConfigured = false;
+
+  private ensureConfigured() {
+    if (this.isConfigured) return;
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME || '';
     const apiKey = process.env.CLOUDINARY_API_KEY || '';
     const apiSecret = process.env.CLOUDINARY_API_SECRET || '';
@@ -13,10 +16,14 @@ export class CloudinaryProvider implements ResumeStorageProvider {
         api_key: apiKey,
         api_secret: apiSecret,
       });
+      this.isConfigured = true;
     }
   }
 
+  constructor() {}
+
   async uploadResume(fileBuffer: Buffer, fileName: string, mimeType: string): Promise<string> {
+    this.ensureConfigured();
     const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
     if (!cloudName) {
       throw new Error('Cloudinary is not configured. Please set Cloudinary environment variables.');
@@ -44,6 +51,7 @@ export class CloudinaryProvider implements ResumeStorageProvider {
   }
 
   async deleteResume(fileUrl: string): Promise<boolean> {
+    this.ensureConfigured();
     if (!fileUrl.includes('res.cloudinary.com')) return true;
 
     try {

@@ -1,6 +1,3 @@
-import mammoth from 'mammoth';
-import { getDocumentProxy, extractText } from 'unpdf';
-
 // Clean unnecessary whitespace and remove duplicate lines
 function cleanText(text: string): string {
   const lines = text.split('\n');
@@ -22,6 +19,7 @@ function cleanText(text: string): string {
 
 async function parsePdf(fileBuffer: Buffer): Promise<string> {
   try {
+    const { getDocumentProxy, extractText } = await import('unpdf');
     const pdf = await getDocumentProxy(new Uint8Array(fileBuffer));
     const { text } = await extractText(pdf, { mergePages: true });
     return cleanText(text || '');
@@ -33,7 +31,8 @@ async function parsePdf(fileBuffer: Buffer): Promise<string> {
 
 async function parseDocx(fileBuffer: Buffer): Promise<string> {
   try {
-    const result = await mammoth.extractRawText({ buffer: fileBuffer });
+    const mammoth = await import('mammoth');
+    const result = await mammoth.default.extractRawText({ buffer: fileBuffer });
     return cleanText(result.value || '');
   } catch (error: any) {
     console.error('mammoth parsing error:', error);

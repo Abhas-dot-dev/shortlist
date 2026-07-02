@@ -373,18 +373,6 @@ AI powered by **Google Gemini**
 
 ---
 
-# 📸 Screenshots
-
-> Add screenshots of:
-
-- Landing Page
-- Recruiter Dashboard
-- Candidate Dashboard
-- AI Resume Review
-- Resume Upload
-- Analytics Dashboard
-
----
 
 # 🤝 Contributing
 
